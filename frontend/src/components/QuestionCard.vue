@@ -1,6 +1,7 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { speechSupported, createSpeech } from '../utils/speech'
+import { speechSupport, speechHint, ensureMicrophone, createSpeech } from '../utils/speech'
+import { showToast } from '../utils/toast'
 
 const props = defineProps({
   question: { type: Object, required: true },
@@ -11,16 +12,26 @@ const emit = defineEmits(['update:modelValue'])
 const multiSet = ref([])
 
 
-const micSupported = speechSupported()
+const micSupport = speechSupport()
+const micSupported = micSupport.ok
 const listening = ref(false)
 let rec = null
 
-function toggleMic() {
-  if (!micSupported) return
+async function toggleMic() {
   if (rec) {
     rec.stop()
     rec = null
     listening.value = false
+    return
+  }
+  const support = speechSupport()
+  if (!support.ok) {
+    showToast(speechHint(support.reason))
+    return
+  }
+  const mic = await ensureMicrophone()
+  if (!mic.ok) {
+    showToast(mic.message)
     return
   }
   rec = createSpeech({
@@ -28,8 +39,17 @@ function toggleMic() {
     onState: (s) => {
       listening.value = s
       if (!s) rec = null
+    },
+    onError: (msg) => {
+      if (msg) showToast(msg)
+      listening.value = false
+      rec = null
     }
   })
+  if (!rec) {
+    showToast('当前浏览器不支持语音输入，请改用文字输入')
+    return
+  }
   rec.start()
 }
 
@@ -125,10 +145,10 @@ function onQuick(opt) {
         @input="onText"
       ></textarea>
       <button
-        v-if="micSupported"
         type="button"
         class="fill-mic"
-        :class="{ on: listening }"
+        :class="{ on: listening, unsupported: !micSupported }"
+        :title="micSupported ? '语音输入' : speechHint(micSupport.reason)"
         @click="toggleMic"
       >
         <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -267,6 +287,10 @@ function onQuick(opt) {
   background: var(--accent);
   border-color: var(--accent);
   color: #fff;
+}
+
+.fill-mic.unsupported {
+  opacity: 0.5;
 }
 
 .quick {

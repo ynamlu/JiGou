@@ -1,4 +1,4 @@
-﻿<!-- 主流程：模式选择 → 问卷/自由对话 → 生成报告。 -->
+<!-- 主流程：模式选择 → 问卷/自由对话 → 生成报告。 -->
 <script setup>
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { onBeforeRouteLeave, useRouter } from 'vue-router'
@@ -15,7 +15,7 @@ import DocCard from '../components/DocCard.vue'
 import InspirationChips from '../components/InspirationChips.vue'
 import QuestionCard from '../components/QuestionCard.vue'
 import { showToast } from '../utils/toast'
-import { speechSupported, createSpeech } from '../utils/speech'
+import { speechSupport, speechHint, ensureMicrophone, createSpeech } from '../utils/speech'
 import logo from '../assets/logo.png'
 
 const router = useRouter()
@@ -40,16 +40,26 @@ const freeRef = ref(null)
 const chatMainRef = ref(null)
 
 
-const micSupported = speechSupported()
+const micSupport = speechSupport()
+const micSupported = micSupport.ok
 const listening = ref(false)
 let rec = null
 
-function toggleMic() {
-  if (!micSupported) return
+async function toggleMic() {
   if (rec) {
     rec.stop()
     rec = null
     listening.value = false
+    return
+  }
+  const support = speechSupport()
+  if (!support.ok) {
+    showToast(speechHint(support.reason))
+    return
+  }
+  const mic = await ensureMicrophone()
+  if (!mic.ok) {
+    showToast(mic.message)
     return
   }
   rec = createSpeech({
@@ -60,8 +70,17 @@ function toggleMic() {
     onState: (s) => {
       listening.value = s
       if (!s) rec = null
+    },
+    onError: (msg) => {
+      if (msg) showToast(msg)
+      listening.value = false
+      rec = null
     }
   })
+  if (!rec) {
+    showToast('当前浏览器不支持语音输入，请改用文字输入')
+    return
+  }
   rec.start()
 }
 
@@ -483,10 +502,10 @@ onMounted(async () => {
             @input="resizeFree"
           ></textarea>
           <button
-            v-if="micSupported"
             type="button"
             class="mic"
-            :class="{ on: listening }"
+            :class="{ on: listening, unsupported: !micSupported }"
+            :title="micSupported ? '语音输入' : speechHint(micSupport.reason)"
             :disabled="chat.busy"
             @click="toggleMic"
           >
@@ -761,6 +780,10 @@ onMounted(async () => {
   border-color: var(--accent);
   color: #fff;
   animation: micPulse 1.2s ease infinite;
+}
+
+.mic.unsupported {
+  opacity: 0.45;
 }
 
 .mic:disabled {

@@ -242,6 +242,8 @@ cd backend
 | 依赖安装慢 / 失败 | 后端默认走清华镜像；前端失败可先手动 `npm install` |
 | 登录后突然被退回登录页 | 同一账号在别处登录会替换 token（一个账号同时只有一个登录态），重新登录即可 |
 | 忘记密码 | 本地版没有短信找回；可删除 `backend/data/jigou.db` 后重新注册（会清空所有账号与验收记录） |
+| 语音输入没反应 / 麦克风按钮是灰的 | 语音识别要求 Chrome/Edge + **localhost 或 HTTPS**；手机用局域网 IP（`http://192.168.x.x`）访问会被浏览器禁用麦克风。Chrome 还需能访问其语音服务，国内网络常被拦截，建议改用 **Edge** 打开同一地址，或直接用文字输入 |
+| 语音输入提示权限被拒绝 | 点地址栏左侧图标允许麦克风，并确认系统设置里浏览器有麦克风权限；仍不行就换 Edge 或文字输入 |
 | PyCharm 提示解释器无效 | 项目只保留一个虚拟环境，解释器选 `backend\.venv\Scripts\python.exe`（macOS/Linux 为 `backend/.venv/bin/python`） |
 | 想清空本地数据 | 删除 `backend/data/jigou.db`（验收记录）与浏览器站点数据（报告草稿） |
 
