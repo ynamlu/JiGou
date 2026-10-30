@@ -1,7 +1,5 @@
 <script setup>
 import { ref, watch } from 'vue'
-import { speechSupport, speechHint, ensureMicrophone, createSpeech } from '../utils/speech'
-import { showToast } from '../utils/toast'
 
 const props = defineProps({
   question: { type: Object, required: true },
@@ -10,48 +8,6 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue'])
 
 const multiSet = ref([])
-
-
-const micSupport = speechSupport()
-const micSupported = micSupport.ok
-const listening = ref(false)
-let rec = null
-
-async function toggleMic() {
-  if (rec) {
-    rec.stop()
-    rec = null
-    listening.value = false
-    return
-  }
-  const support = speechSupport()
-  if (!support.ok) {
-    showToast(speechHint(support.reason))
-    return
-  }
-  const mic = await ensureMicrophone()
-  if (!mic.ok) {
-    showToast(mic.message)
-    return
-  }
-  rec = createSpeech({
-    onText: (t) => emit('update:modelValue', t),
-    onState: (s) => {
-      listening.value = s
-      if (!s) rec = null
-    },
-    onError: (msg) => {
-      if (msg) showToast(msg)
-      listening.value = false
-      rec = null
-    }
-  })
-  if (!rec) {
-    showToast('当前浏览器不支持语音输入，请改用文字输入')
-    return
-  }
-  rec.start()
-}
 
 
 function parseMulti(v) {
@@ -144,19 +100,6 @@ function onQuick(opt) {
         :placeholder="q().placeholder || '请在这里填写…'"
         @input="onText"
       ></textarea>
-      <button
-        type="button"
-        class="fill-mic"
-        :class="{ on: listening, unsupported: !micSupported }"
-        :title="micSupported ? '语音输入' : speechHint(micSupport.reason)"
-        @click="toggleMic"
-      >
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-          <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8" />
-        </svg>
-        <span>{{ listening ? '正在聆听…' : '语音输入' }}</span>
-      </button>
     </div>
 
     
@@ -267,30 +210,6 @@ function onQuick(opt) {
 
 .fill textarea:focus {
   border-color: var(--accent);
-}
-
-.fill-mic {
-  margin-top: 10px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 999px;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  color: var(--ink-2);
-  font-size: 13px;
-  transition: all 0.16s;
-}
-
-.fill-mic.on {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-.fill-mic.unsupported {
-  opacity: 0.5;
 }
 
 .quick {

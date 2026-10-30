@@ -15,7 +15,6 @@ import DocCard from '../components/DocCard.vue'
 import InspirationChips from '../components/InspirationChips.vue'
 import QuestionCard from '../components/QuestionCard.vue'
 import { showToast } from '../utils/toast'
-import { speechSupport, speechHint, ensureMicrophone, createSpeech } from '../utils/speech'
 import logo from '../assets/logo.png'
 
 const router = useRouter()
@@ -38,51 +37,6 @@ let pendingPath = null
 const freeInput = ref('')
 const freeRef = ref(null)
 const chatMainRef = ref(null)
-
-
-const micSupport = speechSupport()
-const micSupported = micSupport.ok
-const listening = ref(false)
-let rec = null
-
-async function toggleMic() {
-  if (rec) {
-    rec.stop()
-    rec = null
-    listening.value = false
-    return
-  }
-  const support = speechSupport()
-  if (!support.ok) {
-    showToast(speechHint(support.reason))
-    return
-  }
-  const mic = await ensureMicrophone()
-  if (!mic.ok) {
-    showToast(mic.message)
-    return
-  }
-  rec = createSpeech({
-    onText: (t) => {
-      freeInput.value = t
-      resizeFree()
-    },
-    onState: (s) => {
-      listening.value = s
-      if (!s) rec = null
-    },
-    onError: (msg) => {
-      if (msg) showToast(msg)
-      listening.value = false
-      rec = null
-    }
-  })
-  if (!rec) {
-    showToast('当前浏览器不支持语音输入，请改用文字输入')
-    return
-  }
-  rec.start()
-}
 
 const canNext = computed(() => !quiz.busy && (answer.value || '').trim() !== '')
 const canGenerate = computed(
@@ -501,19 +455,6 @@ onMounted(async () => {
             @keydown="onFreeKey"
             @input="resizeFree"
           ></textarea>
-          <button
-            type="button"
-            class="mic"
-            :class="{ on: listening, unsupported: !micSupported }"
-            :title="micSupported ? '语音输入' : speechHint(micSupport.reason)"
-            :disabled="chat.busy"
-            @click="toggleMic"
-          >
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
-              <path d="M19 10v1a7 7 0 0 1-14 0v-1M12 18v4M8 22h8" />
-            </svg>
-          </button>
           <button type="button" class="send" :disabled="chat.busy || !freeInput.trim()" @click="sendFree">
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round" />
@@ -759,46 +700,6 @@ onMounted(async () => {
 
 .composer textarea::placeholder {
   color: var(--ink-3);
-}
-
-.mic {
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
-  border: 1px solid var(--line);
-  cursor: pointer;
-  background: var(--bg);
-  color: var(--ink-2);
-  display: grid;
-  place-items: center;
-  transition: all 0.18s;
-}
-
-.mic.on {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  animation: micPulse 1.2s ease infinite;
-}
-
-.mic.unsupported {
-  opacity: 0.45;
-}
-
-.mic:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@keyframes micPulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 0 7px rgba(79, 70, 229, 0);
-  }
 }
 
 .send {

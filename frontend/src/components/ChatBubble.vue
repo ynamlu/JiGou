@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
 import ThinkingDots from './ThinkingDots.vue'
 import logo from '../assets/logo.png'
@@ -14,50 +14,6 @@ const props = defineProps({
 })
 
 const html = computed(() => renderMarkdown(props.content))
-
-// 多模态：语音播报（浏览器 Web Speech API，零额外依赖）
-const speaking = ref(false)
-const ttsSupported = typeof window !== 'undefined' && 'speechSynthesis' in window
-const canSpeak = computed(
-  () => props.role !== 'user' && Boolean(props.content) && !props.streaming && ttsSupported
-)
-
-function plainText(md) {
-  return String(md || '')
-    .replace(/```[\s\S]*?```/g, ' ')
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
-    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
-    .replace(/[#>*`_~]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-}
-
-function toggleSpeak() {
-  if (!ttsSupported) return
-  if (speaking.value) {
-    window.speechSynthesis.cancel()
-    speaking.value = false
-    return
-  }
-  const text = plainText(props.content).slice(0, 600)
-  if (!text) return
-  const utter = new SpeechSynthesisUtterance(text)
-  utter.lang = 'zh-CN'
-  utter.rate = 1.05
-  utter.onend = () => {
-    speaking.value = false
-  }
-  utter.onerror = () => {
-    speaking.value = false
-  }
-  window.speechSynthesis.cancel()
-  window.speechSynthesis.speak(utter)
-  speaking.value = true
-}
-
-onBeforeUnmount(() => {
-  if (speaking.value && ttsSupported) window.speechSynthesis.cancel()
-})
 </script>
 
 <template>
@@ -76,16 +32,6 @@ onBeforeUnmount(() => {
       <ThinkingDots v-else-if="thinking" />
 
       <span v-if="streaming && content" class="cursor"></span>
-
-      <button
-        v-if="canSpeak"
-        type="button"
-        class="speak"
-        :class="{ on: speaking }"
-        @click="toggleSpeak"
-      >
-        {{ speaking ? '停止朗读' : '朗读' }}
-      </button>
     </div>
   </div>
 </template>
@@ -229,29 +175,6 @@ onBeforeUnmount(() => {
 
 .row.user .md :deep(hr) {
   border-top-color: rgba(255, 255, 255, 0.3);
-}
-
-.speak {
-  margin-top: 10px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: #8a90a6;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.speak:hover {
-  color: var(--accent);
-  border-color: var(--accent);
-}
-
-.speak.on {
-  color: var(--accent);
-  border-color: var(--accent);
-  background: var(--accent-soft);
 }
 
 @media (max-width: 640px) {

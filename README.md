@@ -35,7 +35,7 @@
 | 大模型高质量集成 | OpenAI 兼容网关统一接入，流式输出、结构化 JSON 约束、失败兜底 |
 | AI Agent / 工作流 | LangChain Agent（工具调用 + 会话记忆），问卷→诊断→报告→交付物多阶段工作流 |
 | RAG | 12 篇自建软件开发知识库，向量检索 + BM25 关键词检索双通道 |
-| 多模态 | 语音输入（Web Speech Recognition）+ 语音朗读（Speech Synthesis）+ PDF 导出 |
+| 内容输出 | Markdown / PDF / 长截图导出，报告、评分、验收凭证均可分享 |
 | AI 安全与可控性 | 输入审查、注入拦截、输出脱敏、提示词安全边界、异常兜底 |
 | 工具集成 | Function Calling：`search_knowledge` 知识库检索工具 |
 
@@ -52,7 +52,7 @@
 7. **三份交付物**：需求规格说明书（PRD）、开发询价清单（RFP）、成本与工期估算。
 8. **A/B 方案对比**：MVP 版 vs 一步到位版，给出推荐与理由。
 9. **报告修订**：按补充意见重写报告，生成新版本并可再次验收。
-10. **导出与无障碍**：Markdown 渲染、PDF 导出、长截图、语音输入、语音朗读。
+10. **导出**：Markdown 渲染、PDF 导出、长截图。
 11. **账号体系**：手机号注册 / 登录、修改密码、注销账号；报告与验收记录按账号隔离。
 
 ---
@@ -118,7 +118,7 @@
 │   ├── src/components/      # 业务组件
 │   ├── src/stores/          # Pinia 状态
 │   ├── src/api/             # 接口封装（含 NDJSON 流式解析）
-│   ├── src/utils/           # Markdown、语音、导出
+│   ├── src/utils/           # Markdown、导出
 │   └── vite.config.js       # 开发代理 /api → 后端
 ├── docs/screenshots/        # 界面预览图（README 使用）
 ├── .gitignore
@@ -242,8 +242,6 @@ cd backend
 | 依赖安装慢 / 失败 | 后端默认走清华镜像；前端失败可先手动 `npm install` |
 | 登录后突然被退回登录页 | 同一账号在别处登录会替换 token（一个账号同时只有一个登录态），重新登录即可 |
 | 忘记密码 | 本地版没有短信找回；可删除 `backend/data/jigou.db` 后重新注册（会清空所有账号与验收记录） |
-| 语音输入没反应 / 麦克风按钮是灰的 | 语音识别要求 Chrome/Edge + **localhost 或 HTTPS**；手机用局域网 IP（`http://192.168.x.x`）访问会被浏览器禁用麦克风。Chrome 还需能访问其语音服务，国内网络常被拦截，建议改用 **Edge** 打开同一地址，或直接用文字输入 |
-| 语音输入提示权限被拒绝 | 点地址栏左侧图标允许麦克风，并确认系统设置里浏览器有麦克风权限；仍不行就换 Edge 或文字输入 |
 | PyCharm 提示解释器无效 | 项目只保留一个虚拟环境，解释器选 `backend\.venv\Scripts\python.exe`（macOS/Linux 为 `backend/.venv/bin/python`） |
 | 想清空本地数据 | 删除 `backend/data/jigou.db`（验收记录）与浏览器站点数据（报告草稿） |
 
