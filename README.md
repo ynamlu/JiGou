@@ -299,6 +299,7 @@ cd backend
 | 技术文档源文件 | [docs/技术文档-极构需求诊断顾问.docx](<docs/技术文档-极构需求诊断顾问.docx>) | 修改团队信息后可在 Word 中另存为 PDF |
 | 演示视频（MP4） | [demo_video/极构-需求诊断顾问-演示视频.mp4](<demo_video/极构-需求诊断顾问-演示视频.mp4>) | 5:19，1920×1080 / 25fps，H.264 + AAC，男声配音 + 烧录字幕 |
 | 演示视频脚本 | [docs/演示视频脚本.md](docs/演示视频脚本.md) | 完整版 7 分 20 秒；成片 5:19，含功能介绍、技术栈、分镜口播 |
+| 人工配音/录屏素材 | [demo_video/交付说明.md](demo_video/交付说明.md) | 21 张静态页 + PPTX、分镜配音稿、录屏清单与交付格式 |
 | 提交清单 | [docs/提交清单.md](docs/提交清单.md) | 对照省赛要求逐项检查 |
 | 界面截图 / 示意图 | `docs/screenshots/`、`docs/diagrams/` | 技术文档与 README 使用 |
 
