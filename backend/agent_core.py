@@ -384,7 +384,7 @@ CONFIRM_ITEMS_PROMPT = """下面是一份《需求诊断报告》。请把报告
 def extract_confirm_items(report: str) -> list[dict]:
     """从报告中抽取待确认事项；模型输出不合法时返回空列表。"""
     try:
-        raw = build_llm().invoke(CONFIRM_ITEMS_PROMPT.format(report=report)).content
+        raw = build_llm().invoke(CONFIRM_ITEMS_PROMPT.replace("{report}", report)).content
     except Exception:
         return []
     raw = (raw or "").strip()
