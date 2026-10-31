@@ -13,12 +13,11 @@ import os
 import shutil
 import sys
 
+from config import EMBEDDING_API_KEY, EMBEDDING_BASE_URL, EMBEDDING_MODEL
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
 from langchain_openai import OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-from config import EMBEDDING_API_KEY, EMBEDDING_BASE_URL, EMBEDDING_MODEL
 
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")

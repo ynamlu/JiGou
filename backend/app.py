@@ -26,6 +26,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+import db
+import pdf_export
+import safety
 from agent_core import (
     OPENING_MESSAGE,
     STORE_DIR,
@@ -41,10 +44,6 @@ from agent_core import (
 )
 from config import DB_PATH, MODEL_NAME, missing_key
 from retrieval import stats as kb_stats
-
-import db
-import pdf_export
-import safety
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 WEB_DIR = os.path.join(BASE_DIR, "..", "frontend", "dist")
