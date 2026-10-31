@@ -1,6 +1,7 @@
-﻿<!-- 模板库：内置需求模板与案例，支持搜索、预览与导出 Markdown。 -->
+<!-- 模板库：内置需求模板与案例，支持搜索、预览与导出 Markdown。 -->
 <script setup>
 import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useChatStore } from '../stores/chat'
 import AppHeader from '../components/AppHeader.vue'
 import BottomNav from '../components/BottomNav.vue'
@@ -11,6 +12,7 @@ import { cases } from '../data/cases'
 import { saveTextFile } from '../utils/export'
 import { showToast } from '../utils/toast'
 
+const router = useRouter()
 const chat = useChatStore()
 
 const tab = ref('templates') 
@@ -41,6 +43,11 @@ function open(t) {
 
 function close() {
   active.value = null
+}
+
+function applyTemplate(t) {
+  const prompt = `我想参考【${t.name}】进行需求诊断。核心方向是：${t.summary || t.name}`
+  router.push({ path: '/', query: { prompt } })
 }
 
 function exportMd(t) {
@@ -96,7 +103,10 @@ function exportMd(t) {
             <div class="tpl-tags">
               <span v-for="tag in t.tags" :key="tag" class="tag">{{ tag }}</span>
             </div>
-            <button type="button" class="export-btn" @click.stop="exportMd(t)">导出 MD</button>
+            <div class="tpl-actions">
+              <button type="button" class="apply-btn" @click.stop="applyTemplate(t)">以此开始诊断</button>
+              <button type="button" class="export-btn" @click.stop="exportMd(t)">导出 MD</button>
+            </div>
           </div>
         </div>
       </div>
@@ -119,7 +129,10 @@ function exportMd(t) {
               </svg>
             </button>
             <div class="detail-title">{{ active.name }}</div>
-            <button type="button" class="detail-export" @click="exportMd(active)">导出 MD</button>
+            <div class="detail-bar-actions">
+              <button type="button" class="detail-apply" @click="applyTemplate(active)">以此开始诊断</button>
+              <button type="button" class="detail-export" @click="exportMd(active)">导出 MD</button>
+            </div>
           </header>
           <div class="detail-body">
             <div v-if="active.assessment" class="case-assessment card">
@@ -300,14 +313,44 @@ function exportMd(t) {
   border: 1px solid var(--line);
 }
 
+.tpl-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+.apply-btn {
+  font-size: 12.5px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  font-weight: 600;
+  transition: all 0.16s ease;
+}
+
+.apply-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
 .export-btn {
   flex: none;
   font-size: 12.5px;
   padding: 6px 13px;
   border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
+  background: #f1f3f9;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
   font-weight: 600;
+  transition: all 0.16s ease;
+}
+
+.export-btn:hover {
+  background: #e2e8f0;
 }
 
 .empty-state {
@@ -372,14 +415,42 @@ function exportMd(t) {
   text-overflow: ellipsis;
 }
 
-.detail-export {
+.detail-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   flex: none;
+}
+
+.detail-apply {
   font-size: 13px;
   padding: 7px 14px;
   border-radius: 999px;
   background: var(--accent);
   color: #fff;
   font-weight: 600;
+  transition: all 0.16s ease;
+}
+
+.detail-apply:hover {
+  background: #4338ca;
+  transform: translateY(-1px);
+}
+
+.detail-export {
+  flex: none;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #f1f3f9;
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+  font-weight: 600;
+  transition: all 0.16s ease;
+}
+
+.detail-export:hover {
+  background: #e2e8f0;
 }
 
 .detail-body {

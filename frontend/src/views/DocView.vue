@@ -1,4 +1,4 @@
-﻿<!-- 报告详情：正文、待确认项验收、成熟度评分、交付物、版本与导出。 -->
+<!-- 报告详情：正文、待确认项验收、成熟度评分、交付物、版本与导出。 -->
 <script setup>
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -9,6 +9,8 @@ import { saveImageFile, savePdfFile, saveTextFile } from '../utils/export'
 import { showToast } from '../utils/toast'
 import MarkdownDoc from '../components/MarkdownDoc.vue'
 import AssessmentCard from '../components/AssessmentCard.vue'
+import DeliverablesCard from '../components/DeliverablesCard.vue'
+import AbPlanCard from '../components/AbPlanCard.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,6 +38,22 @@ watch(confirmItems, () => {
   decisions.value = confirmItems.value.map(() => ({ decision: '', note: '' }))
 }, { immediate: true })
 
+const decidedCount = computed(
+  () => decisions.value.filter((d) => !!d.decision).length
+)
+const decisionPercent = computed(() => {
+  if (!confirmItems.value.length) return 0
+  return Math.round((decidedCount.value / confirmItems.value.length) * 100)
+})
+
+function markAllConfirmed() {
+  decisions.value.forEach((d) => {
+    if (!d.decision) {
+      d.decision = 'confirmed'
+    }
+  })
+}
+
 const allDecided = computed(
   () => decisions.value.length > 0 && decisions.value.every((d) => d.decision)
 )
@@ -62,9 +80,9 @@ async function confirmAccept() {
     }))
     const result = await api.accept(item.value.document, confirmItems.value, resolutions, item.value.id)
     archive.setAcceptance(item.value.id, result)
-    showToast('验收完成，凭证已生成')
+    showToast('验收完成，凭证已生成', 'success')
   } catch (e) {
-    showToast(e.message || '验收失败，请重试')
+    showToast(e.message || '验收失败，请重试', 'error')
   } finally {
     accepting.value = false
   }
@@ -81,7 +99,7 @@ async function loadAssessment() {
     const a = await api.assessment(item.value.document)
     archive.setAssessment(item.value.id, a && Object.keys(a).length ? a : null)
   } catch (e) {
-    showToast(e.message || '评分生成失败')
+    showToast(e.message || '评分生成失败', 'error')
   } finally {
     scoring.value = false
   }
@@ -90,13 +108,6 @@ async function loadAssessment() {
 
 const deliverables = computed(() => (item.value && item.value.deliverables) || null)
 const dLoading = ref(false)
-const dTab = ref('prd')
-const D_TABS = [
-  { key: 'prd', label: '规格说明书' },
-  { key: 'rfp', label: '询价清单' },
-  { key: 'estimate', label: '成本工期' }
-]
-const D_NAMES = { prd: '需求规格说明书', rfp: '开发询价清单', estimate: '成本工期估算' }
 
 async function loadDeliverables() {
   if (!item.value || dLoading.value || deliverables.value) return
@@ -105,23 +116,10 @@ async function loadDeliverables() {
     const d = await api.deliverables(item.value.document)
     archive.setDeliverables(item.value.id, d || null)
   } catch (e) {
-    showToast(e.message || '生成交付物失败')
+    showToast(e.message || '生成交付物失败', 'error')
   } finally {
     dLoading.value = false
   }
-}
-
-function activeDeliverable() {
-  return (deliverables.value && deliverables.value[dTab.value]) || ''
-}
-
-function exportDeliverable() {
-  const d = deliverables.value
-  if (!d || !item.value) return
-  const content = d[dTab.value] || ''
-  if (!content) return
-  const mode = saveTextFile(`${item.value.title}-${D_NAMES[dTab.value]}.md`, content)
-  showToast(mode === 'native' ? '已保存到「下载」目录' : `${D_NAMES[dTab.value]}已导出`)
 }
 
 
@@ -135,7 +133,7 @@ async function loadAbPlan() {
     const p = await api.abPlan(item.value.document)
     archive.setAbPlan(item.value.id, p && (p.plan_a || p.plan_b) ? p : null)
   } catch (e) {
-    showToast(e.message || '生成方案失败')
+    showToast(e.message || '生成方案失败', 'error')
   } finally {
     abLoading.value = false
   }
@@ -161,7 +159,7 @@ async function submitRevision() {
     const r = await api.revision(item.value.document, revisionText.value.trim())
     draft.value = r || { document: '', confirm_items: [], assessment: null }
   } catch (e) {
-    showToast(e.message || '生成新版本失败')
+    showToast(e.message || '生成新版本失败', 'error')
   } finally {
     revising.value = false
   }
@@ -182,9 +180,9 @@ async function acceptDraft() {
     draft.value = null
     revisionText.value = ''
     showRevision.value = false
-    showToast(`已验收为新版本 ${currentVersion.value}`)
+    showToast(`已验收为新版本 ${currentVersion.value}`, 'success')
   } catch (e) {
-    showToast(e.message || '验收失败，请重试')
+    showToast(e.message || '验收失败，请重试', 'error')
   } finally {
     acceptDrafting.value = false
   }
@@ -233,13 +231,13 @@ function voucherMarkdown(a) {
 function exportVoucher() {
   if (!acceptance.value || !item.value) return
   const mode = saveTextFile(`${item.value.title}-验收凭证.md`, voucherMarkdown(acceptance.value))
-  showToast(mode === 'native' ? '已保存到「下载」目录' : '验收凭证已导出')
+  showToast(mode === 'native' ? '已保存到「下载」目录' : '验收凭证已导出', 'success')
 }
 
 function exportMarkdown() {
   if (!item.value) return
   const mode = saveTextFile(`${item.value.title}.md`, item.value.document)
-  showToast(mode === 'native' ? '已保存到「下载」目录' : 'MD 文件已导出')
+  showToast(mode === 'native' ? '已保存到「下载」目录' : 'MD 文件已导出', 'success')
 }
 
 async function exportImage() {
@@ -255,9 +253,9 @@ async function exportImage() {
     })
     const dataUrl = canvas.toDataURL('image/png')
     const mode = saveImageFile(`${item.value.title}.png`, dataUrl)
-    showToast(mode === 'native' ? '已保存到相册' : '长截图已导出')
+    showToast(mode === 'native' ? '已保存到相册' : '长截图已导出', 'success')
   } catch {
-    showToast('长截图生成失败，请重试')
+    showToast('长截图生成失败，请重试', 'error')
   } finally {
     exporting.value = false
   }
@@ -270,9 +268,9 @@ async function exportPdf() {
     
     const blob = await api.exportPdf(item.value.document)
     const mode = savePdfFile(`${item.value.title}.pdf`, blob)
-    showToast(mode === 'native' ? '已保存到「下载」目录' : 'PDF 已导出')
+    showToast(mode === 'native' ? '已保存到「下载」目录' : 'PDF 已导出', 'success')
   } catch (e) {
-    showToast(e.message || 'PDF 导出失败，请重试')
+    showToast(e.message || 'PDF 导出失败，请重试', 'error')
   } finally {
     exporting.value = false
   }
@@ -302,10 +300,32 @@ async function exportPdf() {
 
         
         <section v-if="confirmItems.length && !acceptance" class="section card">
-          <h2 class="sec-title">待确认事项</h2>
-          <p class="sec-hint">
-            生成报告时发现以下事项需要您确认或拍板，请逐项选择（只确认/补充，不重新生成报告）：
-          </p>
+          <div class="confirm-head-row">
+            <div>
+              <h2 class="sec-title">待确认事项</h2>
+              <p class="sec-hint">
+                生成报告时发现以下事项需要您确认或拍板，请逐项选择（只确认/补充，不重新生成报告）：
+              </p>
+            </div>
+            <div class="confirm-tools">
+              <span class="progress-pill" :class="{ all: allDecided }">
+                已确认 {{ decidedCount }} / {{ confirmItems.length }}
+              </span>
+              <button
+                v-if="!allDecided"
+                type="button"
+                class="batch-confirm-btn"
+                @click="markAllConfirmed"
+              >
+                一键全部已确认
+              </button>
+            </div>
+          </div>
+
+          <div class="confirm-progress-track">
+            <div class="confirm-progress-fill" :style="{ width: decisionPercent + '%' }"></div>
+          </div>
+
           <div v-for="(it, i) in confirmItems" :key="i" class="confirm-item">
             <div class="item-head">
               <span class="kind-badge" :class="'kind-' + it.kind">{{ kindLabel(it.kind) }}</span>
@@ -339,7 +359,8 @@ async function exportPdf() {
             @click="confirmAccept"
           >
             <span v-if="accepting" class="spin"></span>
-            <span v-else>确认验收</span>
+            <span v-else-if="allDecided">确认验收</span>
+            <span v-else>确认验收（还剩 {{ confirmItems.length - decidedCount }} 项待决定）</span>
           </button>
         </section>
 
@@ -380,27 +401,11 @@ async function exportPdf() {
         
         <section class="section card">
           <h2 class="sec-title">可交付物</h2>
-          <template v-if="deliverables">
-            <div class="tabs">
-              <button
-                v-for="t in D_TABS"
-                :key="t.key"
-                type="button"
-                class="tab"
-                :class="{ on: dTab === t.key }"
-                @click="dTab = t.key"
-              >
-                {{ t.label }}
-              </button>
-            </div>
-            <div class="deliverable-body">
-              <MarkdownDoc v-if="activeDeliverable()" :source="activeDeliverable()" />
-              <p v-else class="empty-tip">暂无内容</p>
-            </div>
-            <button type="button" class="btn-main" @click="exportDeliverable">
-              导出「{{ D_NAMES[dTab] }}」
-            </button>
-          </template>
+          <DeliverablesCard
+            v-if="deliverables"
+            :deliverables="deliverables"
+            :doc-title="item ? item.title : '需求诊断报告'"
+          />
           <div v-else class="lazy-wrap">
             <p class="sec-hint">
               生成三件能直接拿去谈开发的东西：需求规格说明书、询价清单、成本工期估算。
@@ -415,51 +420,7 @@ async function exportPdf() {
         
         <section class="section card">
           <h2 class="sec-title">方案对比</h2>
-          <template v-if="abPlan">
-            <div class="plans">
-              <div v-if="abPlan.plan_a" class="plan">
-                <div class="plan-name">{{ abPlan.plan_a.name }}</div>
-                <p class="plan-pos">{{ abPlan.plan_a.positioning }}</p>
-                <div class="plan-meta">
-                  <span>预算：<b>{{ abPlan.plan_a.cost || '—' }}</b></span>
-                  <span>工期：<b>{{ abPlan.plan_a.duration || '—' }}</b></span>
-                </div>
-                <div class="plan-list-title">范围</div>
-                <ul v-if="abPlan.plan_a.scope && abPlan.plan_a.scope.length" class="plan-list">
-                  <li v-for="(s, i) in abPlan.plan_a.scope" :key="i">{{ s }}</li>
-                </ul>
-                <div v-if="abPlan.plan_a.pros && abPlan.plan_a.pros.length" class="plan-list-title pro">优点</div>
-                <ul v-if="abPlan.plan_a.pros" class="plan-list">
-                  <li v-for="(s, i) in abPlan.plan_a.pros" :key="i">{{ s }}</li>
-                </ul>
-                <div v-if="abPlan.plan_a.cons && abPlan.plan_a.cons.length" class="plan-list-title con">代价</div>
-                <ul v-if="abPlan.plan_a.cons" class="plan-list">
-                  <li v-for="(s, i) in abPlan.plan_a.cons" :key="i">{{ s }}</li>
-                </ul>
-              </div>
-              <div v-if="abPlan.plan_b" class="plan">
-                <div class="plan-name">{{ abPlan.plan_b.name }}</div>
-                <p class="plan-pos">{{ abPlan.plan_b.positioning }}</p>
-                <div class="plan-meta">
-                  <span>预算：<b>{{ abPlan.plan_b.cost || '—' }}</b></span>
-                  <span>工期：<b>{{ abPlan.plan_b.duration || '—' }}</b></span>
-                </div>
-                <div class="plan-list-title">范围</div>
-                <ul v-if="abPlan.plan_b.scope && abPlan.plan_b.scope.length" class="plan-list">
-                  <li v-for="(s, i) in abPlan.plan_b.scope" :key="i">{{ s }}</li>
-                </ul>
-                <div v-if="abPlan.plan_b.pros && abPlan.plan_b.pros.length" class="plan-list-title pro">优点</div>
-                <ul v-if="abPlan.plan_b.pros" class="plan-list">
-                  <li v-for="(s, i) in abPlan.plan_b.pros" :key="i">{{ s }}</li>
-                </ul>
-                <div v-if="abPlan.plan_b.cons && abPlan.plan_b.cons.length" class="plan-list-title con">代价</div>
-                <ul v-if="abPlan.plan_b.cons" class="plan-list">
-                  <li v-for="(s, i) in abPlan.plan_b.cons" :key="i">{{ s }}</li>
-                </ul>
-              </div>
-            </div>
-            <p v-if="abPlan.recommend" class="recommend">💡 建议：{{ abPlan.recommend }}</p>
-          </template>
+          <AbPlanCard v-if="abPlan" :plan="abPlan" />
           <div v-else class="lazy-wrap">
             <p class="sec-hint">给出「最小可行版」和「一步到位版」两套方案，帮您做决定。</p>
             <button type="button" class="btn-main" :disabled="abLoading" @click="loadAbPlan">
@@ -724,6 +685,71 @@ async function exportPdf() {
   margin-bottom: 4px;
 }
 
+.confirm-head-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.confirm-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.progress-pill {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--ink-2);
+  border: 1px solid var(--line);
+}
+
+.progress-pill.all {
+  background: #e6f6ee;
+  color: #059669;
+  border-color: #bbf7d0;
+}
+
+.batch-confirm-btn {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(79, 70, 229, 0.25);
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.batch-confirm-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.confirm-progress-track {
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.confirm-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--grad);
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 .confirm-item {
   padding: 14px 0;
@@ -892,109 +918,6 @@ async function exportPdf() {
   font-size: 12px;
   color: var(--ink-2);
 }
-
-
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-
-.tab {
-  flex: 1;
-  height: 38px;
-  border-radius: 10px;
-  background: var(--bg);
-  border: 1.5px solid var(--line);
-  color: var(--ink-2);
-  font-size: 13px;
-  transition: all 0.16s;
-}
-
-.tab.on {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  color: var(--accent);
-  font-weight: 650;
-}
-
-.deliverable-body {
-  border-top: 1px solid var(--line);
-  padding-top: 12px;
-}
-
-
-.plans {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.plan {
-  padding: 14px;
-  border-radius: 12px;
-  background: var(--bg);
-  border: 1.5px solid var(--line);
-}
-
-.plan-name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.plan-pos {
-  margin: 4px 0 10px;
-  font-size: 13px;
-  color: var(--ink-2);
-  line-height: 1.6;
-}
-
-.plan-meta {
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: var(--ink-2);
-  margin-bottom: 8px;
-}
-
-.plan-meta b {
-  color: var(--ink);
-}
-
-.plan-list-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--ink-3);
-  margin-top: 8px;
-}
-
-.plan-list-title.pro {
-  color: #059669;
-}
-
-.plan-list-title.con {
-  color: #b45309;
-}
-
-.plan-list {
-  margin: 4px 0 0;
-  padding-left: 18px;
-  font-size: 13px;
-  color: var(--ink-2);
-  line-height: 1.7;
-}
-
-.recommend {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--ink);
-  line-height: 1.6;
-  padding: 12px;
-  border-radius: 10px;
-  background: var(--accent-soft);
-}
-
 
 .versions {
   display: flex;

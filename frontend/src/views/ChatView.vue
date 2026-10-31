@@ -1,7 +1,7 @@
 <!-- 主流程：模式选择 → 问卷/自由对话 → 生成报告。 -->
 <script setup>
-import { computed, nextTick, onMounted, ref } from 'vue'
-import { onBeforeRouteLeave, useRouter } from 'vue-router'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeRouteLeave, useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { api } from '../api'
 import { useChatStore } from '../stores/chat'
@@ -14,10 +14,12 @@ import ChatBubble from '../components/ChatBubble.vue'
 import DocCard from '../components/DocCard.vue'
 import InspirationChips from '../components/InspirationChips.vue'
 import QuestionCard from '../components/QuestionCard.vue'
+import ConfirmModal from '../components/ConfirmModal.vue'
 import { showToast } from '../utils/toast'
 import logo from '../assets/logo.png'
 
 const router = useRouter()
+const route = useRoute()
 const chat = useChatStore()
 const quiz = useQuestionnaireStore()
 const archive = useArchiveStore()
@@ -30,6 +32,7 @@ const answer = ref('')
 const note = ref('') 
 const noteOpen = ref(false) 
 const genLoading = ref(false)
+let chatAbortController = null
 
 const showExitConfirm = ref(false) 
 let pendingPath = null 
@@ -94,7 +97,7 @@ async function goNext() {
     noteOpen.value = false
     analysis.saveDraft()
   } catch (e) {
-    showToast(e.message || '出题失败，请重试')
+    showToast(e.message || '出题失败，请重试', 'error')
   }
 }
 
@@ -106,7 +109,7 @@ async function continueAsk() {
     noteOpen.value = false
     analysis.saveDraft()
   } catch (e) {
-    showToast(e.message || '出题失败，请重试')
+    showToast(e.message || '出题失败，请重试', 'error')
   }
 }
 
@@ -142,10 +145,10 @@ async function generate() {
   try {
     const data = await api.generateDoc(chat.sessionId, collectAnswers())
     archive.add(data.document, data.confirm_items, data.assessment)
-    showToast('文档已保存，可在「我的图纸」中查看')
+    showToast('文档已保存，可在「我的图纸」中查看', 'success')
     resetToStart()
   } catch (e) {
-    showToast(e.message || '文档生成失败')
+    showToast(e.message || '文档生成失败', 'error')
   } finally {
     genLoading.value = false
   }
@@ -212,10 +215,18 @@ function onFreeKey(e) {
   }
 }
 
+function stopGeneration() {
+  if (chatAbortController) {
+    chatAbortController.abort()
+    chatAbortController = null
+  }
+}
+
 async function sendFree() {
   const value = freeInput.value.trim()
   if (!value || chat.busy) return
   chat.busy = true
+  chatAbortController = new AbortController()
   chat.messages.push({ role: 'user', content: value, done: true })
   chat.messages.push({
     role: 'assistant',
@@ -233,37 +244,49 @@ async function sendFree() {
   let answerText = ''
   try {
     // 后端用 NDJSON 推事件：思考提示、工具调用状态、正文增量、结束/错误。
-    await api.chatStream(value, chat.sessionId, (event) => {
-      if (event.type === 'tool_start') {
-        bubble.status = '正在检索知识库…'
-        bubble.statusDone = false
-      } else if (event.type === 'thinking') {
-        bubble.thinking = true
-        if (!bubble.status) bubble.status = '正在思考…'
-      } else if (event.type === 'tool_args') {
-        const q = event.args && event.args.query
-        if (q) bubble.status = `检索「${q}」`
-      } else if (event.type === 'tool_end') {
-        bubble.status = '已检索知识库'
-        bubble.statusDone = true
-      } else if (event.type === 'token') {
-        bubble.thinking = false
-        answerText += event.content || ''
-        bubble.content = answerText
-      } else if (event.type === 'done') {
-        answerText = event.content || answerText
-        bubble.content = answerText
-      } else if (event.type === 'error') {
-        bubble.thinking = false
-        answerText += (answerText ? '\n\n' : '') + '> ' + (event.content || '服务端出错')
-        bubble.content = answerText
-      }
-    })
+    await api.chatStream(
+      value,
+      chat.sessionId,
+      (event) => {
+        if (event.type === 'tool_start') {
+          bubble.status = '正在检索知识库…'
+          bubble.statusDone = false
+        } else if (event.type === 'thinking') {
+          bubble.thinking = true
+          if (!bubble.status) bubble.status = '正在思考…'
+        } else if (event.type === 'tool_args') {
+          const q = event.args && event.args.query
+          if (q) bubble.status = `检索「${q}」`
+        } else if (event.type === 'tool_end') {
+          bubble.status = '已检索知识库'
+          bubble.statusDone = true
+        } else if (event.type === 'token') {
+          bubble.thinking = false
+          answerText += event.content || ''
+          bubble.content = answerText
+        } else if (event.type === 'done') {
+          answerText = event.content || answerText
+          bubble.content = answerText
+        } else if (event.type === 'error') {
+          bubble.thinking = false
+          answerText += (answerText ? '\n\n' : '') + '> ' + (event.content || '服务端出错')
+          bubble.content = answerText
+        }
+      },
+      chatAbortController.signal
+    )
   } catch (e) {
     bubble.thinking = false
-    answerText +=
-      (answerText ? '\n\n' : '') + `> 请求失败：${e.message}（检查后端是否在运行）`
-    bubble.content = answerText
+    if (e.name === 'AbortError') {
+      answerText += (answerText ? '\n\n' : '') + '> ⏸ *已停止生成*'
+      bubble.content = answerText
+    } else {
+      answerText +=
+        (answerText ? '\n\n' : '') + `> 请求失败：${e.message}（检查后端是否在运行）`
+      bubble.content = answerText
+    }
+  } finally {
+    chatAbortController = null
   }
 
   bubble.thinking = false
@@ -275,6 +298,9 @@ async function sendFree() {
   scrollChatBottom()
 }
 
+onBeforeUnmount(() => {
+  stopGeneration()
+})
 
 onBeforeRouteLeave((to) => {
   if (!analysis.active) return true
@@ -287,6 +313,18 @@ onMounted(async () => {
   archive.load()
   analysis.restoreDraft() 
   await chat.init()
+
+  if (route.query.prompt) {
+    const promptText = String(route.query.prompt)
+    startMode('chat')
+    freeInput.value = promptText
+    router.replace({ path: '/', query: {} })
+    await nextTick()
+    resizeFree()
+    if (freeRef.value) {
+      freeRef.value.focus()
+    }
+  }
 })
 </script>
 
@@ -455,7 +493,23 @@ onMounted(async () => {
             @keydown="onFreeKey"
             @input="resizeFree"
           ></textarea>
-          <button type="button" class="send" :disabled="chat.busy || !freeInput.trim()" @click="sendFree">
+          <button
+            v-if="chat.busy"
+            type="button"
+            class="stop-btn"
+            title="停止生成"
+            @click="stopGeneration"
+          >
+            <span class="stop-icon">■</span>
+            <span class="stop-text">停止</span>
+          </button>
+          <button
+            v-else
+            type="button"
+            class="send"
+            :disabled="chat.busy || !freeInput.trim()"
+            @click="sendFree"
+          >
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2">
               <path d="M12 19V5M5 12l7-7 7 7" stroke-linecap="round" stroke-linejoin="round" />
             </svg>
@@ -464,34 +518,26 @@ onMounted(async () => {
       </main>
 
     
-    <div v-if="confirmMode" class="confirm-mask" @click.self="confirmMode = null">
-      <div class="confirm-card card">
-        <h3>开始需求分析</h3>
-        <p>
-          选择一种方式开始：问卷适合还说不清楚的人，自由对话适合已经有想法的人。
-        </p>
-        <div class="confirm-actions">
-          <button type="button" class="nav-btn" @click="confirmMode = null">取消</button>
-          <button type="button" class="nav-btn primary" @click="confirmStart">确定</button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      :visible="!!confirmMode"
+      title="开始需求分析"
+      content="选择一种方式开始：问卷适合还说不清楚的人，自由对话适合已经有想法的人。"
+      confirm-text="确定"
+      cancel-text="取消"
+      @confirm="confirmStart"
+      @cancel="confirmMode = null"
+    />
 
-    
-    <div v-if="showExitConfirm" class="confirm-mask">
-      <div class="confirm-card card">
-        <h3>放弃本次分析？</h3>
-        <p>
-          本次需求分析尚未生成文档，放弃后本次进度将被清空。
-        </p>
-        <div class="confirm-actions">
-          <button type="button" class="nav-btn" @click="continueAnalysis">继续分析</button>
-          <button type="button" class="nav-btn primary" @click="confirmExit">
-            {{ pendingPath ? '放弃并离开' : '放弃本次分析' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal
+      :visible="showExitConfirm"
+      title="放弃本次分析？"
+      content="本次需求分析尚未生成文档，放弃后本次进度将被清空。"
+      :confirm-text="pendingPath ? '放弃并离开' : '放弃本次分析'"
+      cancel-text="继续分析"
+      :danger="true"
+      @confirm="confirmExit"
+      @cancel="continueAnalysis"
+    />
 
     <BottomNav />
   </div>
@@ -723,6 +769,36 @@ onMounted(async () => {
 .send:disabled {
   background: #c7cbe0;
   cursor: not-allowed;
+}
+
+.stop-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 13px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+  transition: all 0.18s;
+  box-shadow: 0 4px 12px -4px rgba(220, 38, 38, 0.35);
+}
+
+.stop-btn:hover {
+  background: #fecaca;
+  color: #b91c1c;
+  transform: translateY(-1px);
+}
+
+.stop-icon {
+  font-size: 11px;
+  line-height: 1;
 }
 
 

@@ -1,9 +1,10 @@
-﻿<!-- 个人中心：账号信息、修改密码、注销账号与退出登录。 -->
+<!-- 个人中心：账号信息、修改密码、注销账号与退出登录。 -->
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
 import AppHeader from '../components/AppHeader.vue'
+import BottomNav from '../components/BottomNav.vue'
 import { showToast } from '../utils/toast'
 
 const router = useRouter()
@@ -145,6 +146,8 @@ async function logout() {
         <p v-if="delError" class="form-error">{{ delError }}</p>
       </section>
     </main>
+
+    <BottomNav />
   </div>
 </template>
 

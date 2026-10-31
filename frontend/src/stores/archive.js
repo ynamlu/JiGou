@@ -108,6 +108,26 @@ export const useArchiveStore = defineStore('archive', {
       saveItems(this.items)
     },
 
+    remove(id) {
+      const idx = this.items.findIndex((it) => it.id === id)
+      if (idx >= 0) {
+        this.items.splice(idx, 1)
+        saveItems(this.items)
+        return true
+      }
+      return false
+    },
+
+    rename(id, newTitle) {
+      const item = this.items.find((it) => it.id === id)
+      if (item && String(newTitle || '').trim()) {
+        item.title = String(newTitle).trim()
+        saveItems(this.items)
+        return true
+      }
+      return false
+    },
+
     getById(id) {
       return this.items.find((item) => item.id === id)
     }

@@ -5,7 +5,9 @@ const route = useRoute()
 const router = useRouter()
 
 function isActive(path) {
-  return route.path === path
+  if (path === '/') return route.path === '/'
+  if (path === '/history') return route.path === '/history' || route.path.startsWith('/doc/')
+  return route.path.startsWith(path)
 }
 
 function go(path) {
@@ -21,7 +23,7 @@ function go(path) {
       :class="{ active: isActive('/') }"
       @click="go('/')"
     >
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         <path d="M8 9h8M8 13h5" />
       </svg>
@@ -34,13 +36,41 @@ function go(path) {
       :class="{ active: isActive('/templates') }"
       @click="go('/templates')"
     >
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1.5" />
         <rect x="14" y="3" width="7" height="7" rx="1.5" />
         <rect x="3" y="14" width="7" height="7" rx="1.5" />
         <rect x="14" y="14" width="7" height="7" rx="1.5" />
       </svg>
-      <span>标准模板库</span>
+      <span>模板案例</span>
+    </button>
+
+    <button
+      type="button"
+      class="nav-item"
+      :class="{ active: isActive('/history') }"
+      @click="go('/history')"
+    >
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+      </svg>
+      <span>我的图纸</span>
+    </button>
+
+    <button
+      type="button"
+      class="nav-item"
+      :class="{ active: isActive('/profile') }"
+      @click="go('/profile')"
+    >
+      <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+      <span>个人中心</span>
     </button>
   </nav>
 </template>

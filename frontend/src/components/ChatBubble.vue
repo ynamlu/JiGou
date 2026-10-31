@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { renderMarkdown } from '../utils/markdown'
 import ThinkingDots from './ThinkingDots.vue'
 import logo from '../assets/logo.png'
@@ -14,6 +14,32 @@ const props = defineProps({
 })
 
 const html = computed(() => renderMarkdown(props.content))
+
+const copied = ref(false)
+let copyTimer = null
+
+async function copyContent() {
+  if (!props.content) return
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(props.content)
+    } else {
+      const textarea = document.createElement('textarea')
+      textarea.value = props.content
+      document.body.appendChild(textarea)
+      textarea.select()
+      document.execCommand('copy')
+      textarea.remove()
+    }
+    copied.value = true
+    clearTimeout(copyTimer)
+    copyTimer = setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  } catch {
+    
+  }
+}
 </script>
 
 <template>
@@ -32,6 +58,24 @@ const html = computed(() => renderMarkdown(props.content))
       <ThinkingDots v-else-if="thinking" />
 
       <span v-if="streaming && content" class="cursor"></span>
+
+      <div v-if="content && !thinking" class="bubble-actions">
+        <button
+          type="button"
+          class="action-btn"
+          :title="copied ? '已复制' : '复制内容'"
+          @click="copyContent"
+        >
+          <svg v-if="!copied" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+          </svg>
+          <svg v-else viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#059669" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <span>{{ copied ? '已复制' : '复制' }}</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -237,5 +281,48 @@ const html = computed(() => renderMarkdown(props.content))
 .speak:hover {
   background: var(--accent-soft);
   border-color: rgba(79, 70, 229, 0.4);
+}
+
+.bubble-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed rgba(226, 232, 240, 0.8);
+}
+
+.row.user .bubble-actions {
+  border-top-color: rgba(255, 255, 255, 0.25);
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  color: var(--ink-3);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+
+.action-btn:hover {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: rgba(79, 70, 229, 0.2);
+}
+
+.row.user .action-btn {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.row.user .action-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.35);
 }
 </style>

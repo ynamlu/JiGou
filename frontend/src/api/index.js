@@ -176,11 +176,12 @@ export const api = {
     })
   },
 
-  async chatStream(message, sessionId, onEvent) {
+  async chatStream(message, sessionId, onEvent, signal) {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: authHeaders(),
-      body: JSON.stringify({ message, session_id: sessionId })
+      body: JSON.stringify({ message, session_id: sessionId }),
+      signal
     })
 
     if (res.status === 401 && getToken()) {
