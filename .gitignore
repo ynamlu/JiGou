@@ -33,6 +33,16 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
-# ---- 工具缓存 ----.ruff_cache/
+# ---- 工具缓存 ----
+.ruff_cache/
 docs/_preview*/
+
+# ---- 演示视频：只保留成片、字幕与时间轴，原始素材不入库 ----
+.workbuddy/
+demo_video/raw/
+demo_video/tmp/
+demo_video/frames/
+demo_video/slides/
+demo_video/audio/
+demo_video/*.wav
 
