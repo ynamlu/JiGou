@@ -453,7 +453,13 @@ onMounted(async () => {
           </template>
         </div>
 
-        <button v-if="!quiz.finished" type="button" class="gen-btn" :disabled="!canGenerate" @click="generate">
+        <button
+          v-if="!quiz.finished && canGenerate"
+          type="button"
+          class="gen-btn quiz-gen"
+          :disabled="genLoading"
+          @click="generate"
+        >
           <span v-if="genLoading" class="spin"></span>
           <span v-else>生成需求报告</span>
         </button>
@@ -477,7 +483,7 @@ onMounted(async () => {
 
         <InspirationChips v-if="chat.messages.length === 1" :items="chips" @pick="(t) => { freeInput = t; sendFree() }" />
 
-        <button type="button" class="gen-btn" :disabled="!canGenerate" @click="generate">
+        <button type="button" class="gen-btn" :disabled="!canGenerate || genLoading" @click="generate">
           <span v-if="genLoading" class="spin"></span>
           <span v-else>生成需求报告</span>
         </button>
@@ -1398,6 +1404,33 @@ onMounted(async () => {
   color: #9aa4ba;
   box-shadow: none;
   opacity: 1;
+}
+
+/* 问卷底部：条件满足后才出现的次级操作，避免全宽灰色禁用条 */
+.main > .gen-btn.quiz-gen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  width: auto;
+  min-width: 220px;
+  max-width: none;
+  height: 44px;
+  margin: 16px auto 6px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(79, 70, 229, 0.22);
+  box-shadow: none;
+  font-size: 14px;
+}
+
+.main > .gen-btn.quiz-gen:hover:not(:disabled) {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  filter: none;
 }
 
 .chat-main {
