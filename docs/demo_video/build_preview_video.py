@@ -34,7 +34,7 @@ FRAMES = OUT / "frames"
 SEGS = OUT / "tmp" / "segs"
 
 W, H = 1920, 1080
-FPS = 30
+FPS = 25
 
 INK = (28, 25, 72)
 INK2 = (66, 62, 108)

@@ -297,10 +297,10 @@ CARDS = [
 
 TECH_COLUMNS = [
     ("前端", "Vue 3.5 + Vite 8", [
-        "Vue 3.5 + Vite 8",
+        "Composition API + 原生 CSS 响应式",
         "Pinia 4 + Vue Router 5",
         "markdown-it + highlight.js",
-        "原生 CSS 响应式",
+        "无需 UI 框架，按需组合",
     ]),
     ("后端与 AI", "FastAPI + LangChain", [
         "FastAPI + Uvicorn",

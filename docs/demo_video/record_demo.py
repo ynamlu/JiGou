@@ -418,7 +418,7 @@ def main() -> int:
         )
         ctx = browser.new_context(
             viewport={"width": 1920, "height": 1080},
-            device_scale_factor=1,
+            device_scale_factor=2,
             locale="zh-CN",
             timezone_id="Asia/Shanghai",
             record_video_dir=str(RAW / "video"),

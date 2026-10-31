@@ -16,16 +16,17 @@
 
 from __future__ import annotations
 
+import asyncio
 import csv
 import json
 import re
 import subprocess
 import sys
 import time
-import urllib.parse
-import urllib.request
 import wave
 from pathlib import Path
+
+import edge_tts
 
 sys.path.insert(0, str(Path(__file__).parent))
 from video_content import BLOCKS  # noqa: E402
@@ -40,13 +41,11 @@ LEAD_IN = 1.2
 TAIL = 1.6
 GAP_BLOCK = 0.42      # 分镜之间
 CHAPTER_GAP = 0.95    # 章节之间
-SPEED = 5             # 百度语速 0-15
-PER = 0               # 0 女声
-REQ_DELAY = 0.8
-
-TTS_URL = "https://tts.baidu.com/text2audio"
-UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
-      "(KHTML, like Gecko) Chrome/124.0 Safari/537.36")
+SPEED = 5             # 保留旧字段，便于时间轴兼容
+VOICE = "zh-CN-YunxiNeural"   # 男声（Edge TTS）
+RATE = "-6%"
+CACHE_TAG = f"{VOICE}-{RATE.replace('%', '').replace('+', 'p').replace('-', 'm')}"
+REQ_DELAY = 0.4
 
 # 英文缩写的中文化读法（只影响语音，不影响字幕）
 TTS_OVERRIDE = {
@@ -84,30 +83,22 @@ def tts_text(text: str) -> str:
     return out.replace("「", "").replace("」", "")
 
 
-def synth(text: str, dest: Path, tries: int = 6) -> None:
-    query = urllib.parse.urlencode({
-        "tex": tts_text(text), "lan": "zh", "cuid": "jigou-demo",
-        "ctp": "1", "pdt": "301", "vol": "9", "rate": "32",
-        "spd": str(SPEED), "per": str(PER),
-    })
+def synth(text: str, dest: Path, tries: int = 4) -> None:
+    """用 Edge TTS 男声合成；失败重试，成功写 MP3。"""
+    async def run() -> None:
+        communicate = edge_tts.Communicate(tts_text(text), VOICE, rate=RATE)
+        await communicate.save(str(dest))
+
     last = ""
     for i in range(tries):
-        req = urllib.request.Request(
-            f"{TTS_URL}?{query}",
-            headers={"User-Agent": UA, "Referer": "https://tts.baidu.com/"},
-        )
         try:
-            with urllib.request.urlopen(req, timeout=40) as resp:
-                ctype = resp.headers.get("Content-Type", "")
-                data = resp.read()
-            if "audio" in ctype and len(data) > 3000:
-                dest.write_bytes(data)
+            if dest.exists():
+                dest.unlink()
+            asyncio.run(run())
+            if dest.exists() and dest.stat().st_size > 3000:
                 time.sleep(REQ_DELAY)
                 return
-            last = f"非音频：{ctype} {data[:100]!r}"
-            if b"ratelimit" in data or b"529" in data:
-                time.sleep(8 * (i + 1))
-                continue
+            last = f"文件过小：{dest.stat().st_size if dest.exists() else 0}"
         except Exception as exc:  # noqa: BLE001
             last = f"{type(exc).__name__}: {exc}"
         time.sleep(1.2 * (i + 1))
@@ -258,7 +249,7 @@ def main() -> int:
 
     blocks_audio: list[dict] = []
     for bi, block in enumerate(BLOCKS):
-        mp3 = AUDIO / f"{block['id']}.mp3"
+        mp3 = AUDIO / f"{block['id']}-{CACHE_TAG}.mp3"
         text = "".join(block["cues"])
         if not mp3.exists() or mp3.stat().st_size < 3000:
             synth(text, mp3)
@@ -342,7 +333,7 @@ ScaledBorderAndShadow: yes
 
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
-Style: Main,Microsoft YaHei,54,&H00FFFFFF,&H00FFFFFF,&HCC1A1410,&H96000000,0,0,0,0,100,100,0.6,0,1,3.4,1.6,2,140,140,86,1
+Style: Main,Microsoft YaHei,44,&H00FFFFFF,&H00FFFFFF,&HCC1A1410,&H96000000,0,0,0,0,100,100,0.6,0,1,3.4,1.6,2,140,140,76,1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -362,7 +353,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     (OUT / "时间轴.json").write_text(json.dumps({
         "duration": round(duration, 3),
         "lead_in": LEAD_IN, "tail": TAIL,
-        "voice": f"baidu per={PER} speed={SPEED}",
+        "voice": f"edge-tts {VOICE} rate={RATE}",
         "blocks": [{k: v for k, v in b.items() if k != "pcm"} for b in blocks_audio],
         "cues": [{**c, "dur": round(c["end"] - c["start"], 3)} for c in flat],
     }, ensure_ascii=False, indent=1), encoding="utf-8")

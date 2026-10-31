@@ -30,8 +30,9 @@ SLIDES = OUT / "slides"
 CLIPS = WORK / "clips"
 
 W, H = 1920, 1080
-FPS = 30
+FPS = 25
 SPEED_MIN, SPEED_MAX = 0.62, 2.6
+CLIP_GUARD = 0.20
 
 
 def ffmpeg() -> str:
@@ -71,8 +72,8 @@ PLAN: dict[str, list[dict]] = {
     "B16": [clip("main", "ab_plan", "new_version", 0.62), slide("deliverables", 0.38)],
     "B17": [clip("main", "doc_again", "accepted", 0.34), slide("version", 0.36),
             clip("main", "new_version", "doc_tour_start", 0.30)],
-    "B18": [clip("tpl", "tpl_open", "end")],
-    "B19": [clip("main", "history_open", "doc_again", 0.34),
+    "B18": [slide("shot:screenshots/templates-desktop.jpg:模板库 · 多行业模板与案例", 1.0)],
+    "B19": [slide("shot:screenshots/history-desktop.jpg:我的图纸 · 搜索 / 删除 / 状态徽章", 0.34),
             clip("main", "doc_tour_end4", "export_png", 0.36),
             slide("shot:screenshots/doc-mobile.jpg:多格式导出 · Markdown / PDF / 长截图", 0.30)],
     "B20": [slide("end")],
@@ -152,6 +153,11 @@ def clip_clip(src: Path, marks: dict, spans: list[tuple[str, str]], dur: float, 
         ta, tb = marks.get(a), marks.get(b)
         if ta is None or tb is None or tb <= ta:
             raise RuntimeError(f"缺少录屏区间 {a}→{b}")
+        # 前后各留一点保护，避免从页面切换/滚动的半帧开始，消除闪屏
+        ta += CLIP_GUARD
+        tb -= CLIP_GUARD
+        if tb <= ta:
+            ta, tb = marks[a], marks[b]
         ranges.append((ta, tb))
     total_src = sum(b - a for a, b in ranges)
     speed = max(SPEED_MIN, min(SPEED_MAX, total_src / dur))
@@ -242,9 +248,10 @@ def main() -> int:
          "-i", str(base), "-i", str(OUT / "配音-完整.mp3"),
          "-map", "0:v:0", "-map", "1:a:0",
          "-vf", "ass=字幕-中文字幕.ass:fontsdir='C\\:/Windows/Fonts'",
-         "-c:v", "libx264", "-preset", "slow", "-crf", "17",
+         "-c:v", "libx264", "-preset", "slow", "-crf", "18",
+         "-maxrate", "6M", "-bufsize", "12M",
          "-c:a", "aac", "-b:a", "192k", "-ar", "44100",
-         "-t", f"{total:.3f}", "-movflags", "+faststart", str(final)],
+         "-r", str(FPS), "-t", f"{total:.3f}", "-movflags", "+faststart", str(final)],
         check=True, cwd=str(OUT),
     )
     print(f"\n成片：{final}  ({final.stat().st_size / 1024 / 1024:.1f} MB)")
