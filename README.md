@@ -1,4 +1,4 @@
-# 极构 · 需求诊断顾问
+﻿# 极构 · 需求诊断顾问
 
 > 2026 第九届传智杯全国大学生数智创新与 AI 应用大赛 · **AI WEB网页开发挑战赛**（团队赛）参赛作品
 
@@ -14,7 +14,7 @@
 
 | 交付物 | 状态 |
 | --- | --- |
-| 技术文档 | [PDF（20 页）](<docs/技术文档-极构需求诊断顾问.pdf>) + [Markdown](<docs/技术文档-极构需求诊断顾问.md>) |
+| 技术文档 | [PDF（21 页）](<docs/技术文档-极构需求诊断顾问.pdf>) + [Markdown](<docs/技术文档-极构需求诊断顾问.md>) |
 | 演示视频 | [6:41 / 1080p30 / 35.1 MB](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) |
 | 静态页总览 | [21 页 PPTX](<demo_video/静态页总览.pptx>) |
 
@@ -321,7 +321,7 @@ cd backend
 
 | 材料 | 文件 | 说明 |
 | --- | --- | --- |
-| 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 20 页，含架构、AI 方案、测试、创新点 |
+| 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 21 页，含架构、AI 方案、测试、创新点 |
 | 技术文档（Markdown） | [docs/技术文档-极构需求诊断顾问.md](<docs/技术文档-极构需求诊断顾问.md>) | 可编辑版本，章节与 PDF 对应 |
 | 演示视频（MP4） | [demo_video/极构-需求诊断顾问-演示视频-成片.mp4](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) | 6:41，1920×1080 / 30fps，完整录屏（PyCharm 起）+ 男声 + 烧录字幕 |
 | 静态页总览（PPTX） | [demo_video/静态页总览.pptx](<demo_video/静态页总览.pptx>) | 21 张静态页的 16:9 总览 |
@@ -337,7 +337,7 @@ cd backend
 | 环境配置 | 环境变量模板 + 依赖清单 | ✅ `backend/.env.example`、`frontend/.env.example` + `requirements.txt` + `package.json` / `package-lock.json` |
 | Git 记录 | 保留真实提交历史 | ✅ 已建立提交历史，持续更新 |
 | 演示视频 | 5–8 分钟、1080p、MP4、普通话 | ✅ 已完成（6:41，1080p30，35.1MB，完整录屏 + 男声） |
-| 技术文档 | PDF、≤30 页，含架构 / AI 方案 / 创新点；附 Markdown 可编辑版 | ✅ 已完成（PDF 20 页 + Markdown） |
+| 技术文档 | PDF、≤30 页，含架构 / AI 方案 / 创新点；附 Markdown 可编辑版 | ✅ 已完成（PDF 21 页 + Markdown） |
 | 在线演示 | 公网可访问（可选加分） | 可选，本地演示不影响评审 |
 
 > 提交前确认 `git status` 中没有 `.env`、`backend/local_config.py`、`backend/data/`、`node_modules/`、`frontend/dist/`；API Key 一旦泄露请立即在平台重置。
