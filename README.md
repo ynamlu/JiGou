@@ -110,7 +110,7 @@
 │   ├── src/api/             # 接口封装（含 NDJSON 流式解析）
 │   ├── src/utils/           # Markdown、导出
 │   └── vite.config.js       # 开发代理 /api → 后端
-├── docs/                   # 技术文档 PDF、提交清单、演示脚本
+├── docs/                   # 技术文档 PDF
 ├── .gitignore
 └── README.md
 ```
@@ -283,10 +283,8 @@ cd backend
 | --- | --- | --- |
 | 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 20 页，含架构、AI 方案、测试、创新点 |
 | 演示视频（MP4） | [demo_video/极构-需求诊断顾问-演示视频-成片.mp4](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) | 6:41，1920×1080 / 30fps，完整录屏（PyCharm 起）+ 男声 + 字幕 |
-| 演示视频脚本 | [docs/演示视频脚本.md](docs/演示视频脚本.md) | 成片 6:41 的分段旁白与制作规范 |
 | 视频制作说明 | [demo_video/交付说明.md](demo_video/交付说明.md) | 成片结构、同步规则、分段时长 |
 | 静态页 / 字幕 | `demo_video/静态页/`、`demo_video/字幕-成片.srt` / `.ass` | 21 张静态页 + PPTX、成片字幕 |
-| 提交清单 | [docs/提交清单.md](docs/提交清单.md) | 对照省赛要求逐项检查 |
 
 ---
 
