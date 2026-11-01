@@ -93,7 +93,7 @@ def npm_command(args: list[str], cwd: Path) -> None:
     npm = shutil.which("npm") or shutil.which("npm.cmd")
     if not npm:
         raise SystemExit(
-            "没有找到 npm。请先安装 Node.js 18+（https://nodejs.org/zh-cn），再重新运行 python run.py"
+            "没有找到 npm。请先安装 Node.js 20.19+（https://nodejs.org/zh-cn），再重新运行 python run.py"
         )
     cmd = [npm, *args]
     if os.name == "nt":
@@ -196,7 +196,7 @@ def main() -> None:
         npm = shutil.which("npm") or shutil.which("npm.cmd")
         if not npm:
             raise SystemExit(
-                "没有找到 npm。请先安装 Node.js 18+（https://nodejs.org/zh-cn）"
+                "没有找到 npm。请先安装 Node.js 20.19+（https://nodejs.org/zh-cn）"
             )
         cmd = [npm, "run", "dev"]
         if os.name == "nt":

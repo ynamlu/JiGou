@@ -147,7 +147,7 @@
 ### 1. 环境要求
 
 - Python 3.11+
-- Node.js 18+（仅构建前端需要）
+- Node.js 20.19+（推荐 22 LTS；仅构建前端需要）
 
 ### 2. 配置 API Key（唯一需要手动改的地方）
 
@@ -238,11 +238,17 @@ cd backend
 | `LLM_API_KEY` | ✅ | — | 模型网关 Key，只放在 `.env` |
 | `LLM_BASE_URL` | — | `https://maas.qianwenaiapi.com/compatible-mode/v1` | OpenAI 兼容网关 |
 | `LLM_MODEL` | — | `deepseek-v4.1-flash-1017` | 模型型号 |
+| `LLM_TEMPERATURE` | — | `0` | 采样温度；结构化输出建议保持 0 |
 | `LLM_ENABLE_THINKING` | — | 不发送 | 设为 `0` / `1` 才显式传给网关 |
 | `EMBEDDING_MODEL` | — | 空 | 留空 = 使用本地 BM25 检索 |
 | `EMBEDDING_API_KEY` / `EMBEDDING_BASE_URL` | — | 复用 LLM 配置 | 向量模型独立网关时填写 |
-| `DB_PATH` | — | `backend/data/jigou.db` | SQLite 文件位置 |
+| `DB_PATH` | — | `backend/data/jigou.db` | SQLite 文件位置；相对路径按 `backend/` 解析 |
 | `MAX_INPUT_CHARS` | — | `2000` | 单条输入长度上限 |
+| `PORT` | — | `8000` | 仅直接运行 `backend/app.py` 时的端口；`run.py` 由 `--port` 控制 |
+| `VITE_API_TARGET` | — | `http://127.0.0.1:8000` | 前端开发代理目标，写在 `frontend/.env` |
+
+环境模板：`backend/.env.example`、`frontend/.env.example`。  
+依赖清单：`backend/requirements.txt`、`frontend/package.json` + `package-lock.json`。
 
 ---
 
@@ -328,7 +334,7 @@ cd backend
 | --- | --- | --- |
 | 代码仓库 | GitHub / Gitee 公开，结构清晰、有注释 | ✅ 已推送：<https://github.com/ynamlu/JiGou> |
 | README | 项目介绍、技术架构、安装运行、团队信息 | ✅ 本文（含团队信息） |
-| 环境配置 | 环境变量模板 + 依赖清单 | ✅ `.env.example` + `requirements.txt` + `package.json` |
+| 环境配置 | 环境变量模板 + 依赖清单 | ✅ `backend/.env.example`、`frontend/.env.example` + `requirements.txt` + `package.json` / `package-lock.json` |
 | Git 记录 | 保留真实提交历史 | ✅ 已建立提交历史，持续更新 |
 | 演示视频 | 5–8 分钟、1080p、MP4、普通话 | ✅ 已完成（6:41，1080p30，35.1MB，完整录屏 + 男声） |
 | 技术文档 | PDF、≤30 页，含架构 / AI 方案 / 创新点；附 Markdown 可编辑版 | ✅ 已完成（PDF 20 页 + Markdown） |
