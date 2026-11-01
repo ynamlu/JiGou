@@ -10,21 +10,7 @@
 
 代码仓库：<https://github.com/ynamlu/JiGou>
 
----
-
-## 界面预览
-
-| 登录 | 注册 | 个人中心 |
-| --- | --- | --- |
-| ![登录](docs/screenshots/login-desktop.jpg) | ![注册](docs/screenshots/register-desktop.jpg) | ![个人中心](docs/screenshots/profile-desktop.jpg) |
-
-| 桌面端 · 首页 | 手机端 · 首页 |
-| --- | --- |
-| ![桌面端首页](docs/screenshots/landing-desktop.jpg) | ![手机端首页](docs/screenshots/landing-mobile.jpg) |
-
-| 模板库 | 报告详情 | 我的图纸 | 对话 |
-| --- | --- | --- | --- |
-| ![模板库](docs/screenshots/templates-desktop.jpg) | ![报告详情](docs/screenshots/report-desktop.jpg) | ![我的图纸](docs/screenshots/history-desktop.jpg) | ![对话](docs/screenshots/chat-desktop.jpg) |
+界面截图、架构图与完整实现说明见 [技术文档 PDF](<docs/技术文档-极构需求诊断顾问.pdf>)。
 
 ---
 
@@ -124,7 +110,7 @@
 │   ├── src/api/             # 接口封装（含 NDJSON 流式解析）
 │   ├── src/utils/           # Markdown、导出
 │   └── vite.config.js       # 开发代理 /api → 后端
-├── docs/screenshots/        # 界面预览图（README 使用）
+├── docs/                   # 技术文档 PDF、提交清单、演示脚本
 ├── .gitignore
 └── README.md
 ```
@@ -296,22 +282,11 @@ cd backend
 | 材料 | 文件 | 说明 |
 | --- | --- | --- |
 | 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 20 页，含架构、AI 方案、测试、创新点 |
-| 技术文档源文件 | [docs/技术文档-极构需求诊断顾问.docx](<docs/技术文档-极构需求诊断顾问.docx>) | 修改团队信息后可在 Word 中另存为 PDF |
 | 演示视频（MP4） | [demo_video/极构-需求诊断顾问-演示视频-成片.mp4](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) | 6:41，1920×1080 / 30fps，完整录屏（PyCharm 起）+ 男声 + 字幕 |
 | 演示视频脚本 | [docs/演示视频脚本.md](docs/演示视频脚本.md) | 成片 6:41 的分段旁白与制作规范 |
-| 视频制作说明 | [demo_video/交付说明.md](demo_video/交付说明.md) | 成片结构、同步规则、分段时长与重新生成命令 |
+| 视频制作说明 | [demo_video/交付说明.md](demo_video/交付说明.md) | 成片结构、同步规则、分段时长 |
 | 静态页 / 字幕 | `demo_video/静态页/`、`demo_video/字幕-成片.srt` / `.ass` | 21 张静态页 + PPTX、成片字幕 |
 | 提交清单 | [docs/提交清单.md](docs/提交清单.md) | 对照省赛要求逐项检查 |
-| 界面截图 / 示意图 | `docs/screenshots/`、`docs/diagrams/` | 技术文档与 README 使用 |
-
-重新生成材料（需要额外安装 `python-docx` 与 `Pillow`，仅生成文档用，不影响运行）：
-
-```bash
-pip install python-docx pillow
-python docs/make_diagrams.py                 # 生成三张示意图（Windows 中文字体）
-python docs/build_tech_doc.py                # 生成 DOCX
-# 用 Word 打开 DOCX，更新目录后另存为 PDF
-```
 
 ---
 
