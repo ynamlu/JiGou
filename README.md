@@ -14,7 +14,7 @@
 
 | 交付物 | 状态 |
 | --- | --- |
-| 技术文档 | [PDF（21 页）](<docs/技术文档-极构需求诊断顾问.pdf>) + [Markdown](<docs/技术文档-极构需求诊断顾问.md>) |
+| 技术文档 | [PDF（21 页）](<docs/技术文档-极构需求诊断顾问.pdf>) + [Word](<docs/技术文档-极构需求诊断顾问.docx>) + [Markdown](<docs/技术文档-极构需求诊断顾问.md>) |
 | 演示视频 | [6:41 / 1080p30 / 35.1 MB](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) |
 | 静态页总览 | [21 页 PPTX](<demo_video/静态页总览.pptx>) |
 
@@ -134,7 +134,7 @@
 │   ├── src/api/             # 接口封装（含 NDJSON 流式解析）
 │   ├── src/utils/           # Markdown、导出
 │   └── vite.config.js       # 开发代理 /api → 后端
-├── docs/                   # 技术文档 PDF / Markdown
+├── docs/                   # 技术文档 PDF / Word / Markdown
 ├── demo_video/             # 6:41 成片、静态页总览 PPTX
 ├── .gitignore
 └── README.md
@@ -322,6 +322,7 @@ cd backend
 | 材料 | 文件 | 说明 |
 | --- | --- | --- |
 | 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 21 页，含架构、AI 方案、测试、创新点 |
+| 技术文档（Word） | [docs/技术文档-极构需求诊断顾问.docx](<docs/技术文档-极构需求诊断顾问.docx>) | 与 PDF 同版，可编辑 |
 | 技术文档（Markdown） | [docs/技术文档-极构需求诊断顾问.md](<docs/技术文档-极构需求诊断顾问.md>) | 可编辑版本，章节与 PDF 对应 |
 | 演示视频（MP4） | [demo_video/极构-需求诊断顾问-演示视频-成片.mp4](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) | 6:41，1920×1080 / 30fps，完整录屏（PyCharm 起）+ 男声 + 烧录字幕 |
 | 静态页总览（PPTX） | [demo_video/静态页总览.pptx](<demo_video/静态页总览.pptx>) | 21 张静态页的 16:9 总览 |
