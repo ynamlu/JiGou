@@ -10,11 +10,13 @@
 
 代码仓库：<https://github.com/ynamlu/JiGou>
 
-界面截图、架构图与完整实现说明见 [技术文档 PDF](<docs/技术文档-极构需求诊断顾问.pdf>)。
+完整实现说明见 [技术文档 PDF](<docs/技术文档-极构需求诊断顾问.pdf>)，产品说明与测试记录见 [项目介绍](<docs/项目介绍-极构需求诊断顾问.pdf>) 和 [测试文档](<docs/测试文档-极构需求诊断顾问.pdf>)。
 
 | 交付物 | 状态 |
 | --- | --- |
-| 技术文档 | [PDF（21 页）](<docs/技术文档-极构需求诊断顾问.pdf>) + [Word](<docs/技术文档-极构需求诊断顾问.docx>) + [Markdown](<docs/技术文档-极构需求诊断顾问.md>) |
+| 技术文档 | [PDF（27 页）](<docs/技术文档-极构需求诊断顾问.pdf>) + [Word](<docs/技术文档-极构需求诊断顾问.docx>) + [Markdown](<docs/技术文档-极构需求诊断顾问.md>) |
+| 项目介绍 | [PDF（15 页）](<docs/项目介绍-极构需求诊断顾问.pdf>) + [Word](<docs/项目介绍-极构需求诊断顾问.docx>) + [Markdown](<docs/项目介绍-极构需求诊断顾问.md>) |
+| 测试文档 | [PDF（20 页）](<docs/测试文档-极构需求诊断顾问.pdf>) + [Word](<docs/测试文档-极构需求诊断顾问.docx>) + [Markdown](<docs/测试文档-极构需求诊断顾问.md>) |
 | 演示视频 | [6:41 / 1080p30 / 35.1 MB](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) |
 | 静态页总览 | [21 页 PPTX](<demo_video/静态页总览.pptx>) |
 
@@ -134,7 +136,7 @@
 │   ├── src/api/             # 接口封装（含 NDJSON 流式解析）
 │   ├── src/utils/           # Markdown、导出
 │   └── vite.config.js       # 开发代理 /api → 后端
-├── docs/                   # 技术文档 PDF / Word / Markdown
+├── docs/                   # 技术文档 / 项目介绍 / 测试文档（各 md、docx、pdf）
 ├── demo_video/             # 6:41 成片、静态页总览 PPTX
 ├── .gitignore
 └── README.md
@@ -312,18 +314,22 @@ cd backend
 
 - **后端静态检查**：`ruff check backend run.py`、`python -m compileall backend run.py` 均通过；
 - **前端构建**：`npm run build` 通过，产物单文件约 766 KB；
-- **接口测试**：TestClient 覆盖注册、登录、401 鉴权、验收、改密、注销与版本 diff；
+- **接口自动化**：`backend/tests` 下 12 个 unittest 测试方法全部通过，覆盖注册、登录、401 鉴权、验收、改密、注销、PDF 导出、缺少 Key、安全规则与 BM25 检索；
 - **数据隔离**：两个账号对同一项目验收互不影响，删号后另一账号数据保留；
-- **浏览器测试**：Playwright 在 320 / 390 / 834 / 1440 四档宽度跑登录、问卷、对话、报告、模板库、我的图纸，无横向滚动、无控制台报错；
+- **浏览器检查**：登录、首页、模板库、我的图纸、个人中心、模板带入与路由守卫均通过；开发阶段另做过 320 / 390 / 834 / 1440 四档宽度检查；
 - **异常路径**：伪造 Token 自动跳登录、弱密码/重复注册/错密码返回对应错误码、未配置 Key 有明确提示。
+
+完整用例、环境与实测数据见 [测试文档](<docs/测试文档-极构需求诊断顾问.pdf>)。
 
 ## 十二、文档与材料
 
 | 材料 | 文件 | 说明 |
 | --- | --- | --- |
-| 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 21 页，含架构、AI 方案、测试、创新点 |
+| 技术文档（PDF） | [docs/技术文档-极构需求诊断顾问.pdf](<docs/技术文档-极构需求诊断顾问.pdf>) | 27 页，含架构、AI 方案、关键实现、测试与局限 |
 | 技术文档（Word） | [docs/技术文档-极构需求诊断顾问.docx](<docs/技术文档-极构需求诊断顾问.docx>) | 与 PDF 同版，可编辑 |
 | 技术文档（Markdown） | [docs/技术文档-极构需求诊断顾问.md](<docs/技术文档-极构需求诊断顾问.md>) | 可编辑版本，章节与 PDF 对应 |
+| 项目介绍（PDF / Word / MD） | [docs/项目介绍-极构需求诊断顾问.pdf](<docs/项目介绍-极构需求诊断顾问.pdf>) | 15 页，面向非技术读者的产品说明 |
+| 测试文档（PDF / Word / MD） | [docs/测试文档-极构需求诊断顾问.pdf](<docs/测试文档-极构需求诊断顾问.pdf>) | 20 页，测试环境、用例、实测结果与缺陷记录 |
 | 演示视频（MP4） | [demo_video/极构-需求诊断顾问-演示视频-成片.mp4](<demo_video/极构-需求诊断顾问-演示视频-成片.mp4>) | 6:41，1920×1080 / 30fps，完整录屏（PyCharm 起）+ 男声 + 烧录字幕 |
 | 静态页总览（PPTX） | [demo_video/静态页总览.pptx](<demo_video/静态页总览.pptx>) | 21 张静态页的 16:9 总览 |
 
@@ -338,7 +344,8 @@ cd backend
 | 环境配置 | 环境变量模板 + 依赖清单 | ✅ `backend/.env.example`、`frontend/.env.example` + `requirements.txt` + `package.json` / `package-lock.json` |
 | Git 记录 | 保留真实提交历史 | ✅ 已建立提交历史，持续更新 |
 | 演示视频 | 5–8 分钟、1080p、MP4、普通话 | ✅ 已完成（6:41，1080p30，35.1MB，完整录屏 + 男声） |
-| 技术文档 | PDF、≤30 页，含架构 / AI 方案 / 创新点；附 Markdown 可编辑版 | ✅ 已完成（PDF 21 页 + Markdown） |
+| 技术文档 | PDF、≤30 页，含架构 / AI 方案 / 创新点；附 Markdown 可编辑版 | ✅ 已完成（PDF 27 页，Word + Markdown 同版） |
+| 补充文档 | 项目介绍、测试记录（可选） | ✅ 已完成（项目介绍 15 页、测试文档 20 页，均含 Word / PDF / Markdown） |
 | 在线演示 | 公网可访问（可选加分） | 可选，本地演示不影响评审 |
 
 > 提交前确认 `git status` 中没有 `.env`、`backend/local_config.py`、`backend/data/`、`node_modules/`、`frontend/dist/`；API Key 一旦泄露请立即在平台重置。
