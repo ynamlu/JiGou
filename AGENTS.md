@@ -77,7 +77,7 @@ JGchuanzhibei/
 │   │   └── views/             # Login / Register / Chat / Doc / TemplateLibrary / History / Profile
 │   ├── dist/                  # 构建产物（已忽略；运行时由 FastAPI 托管）
 │   └── node_modules/          # 依赖（已忽略）
-├── docs/                      # 技术文档 / 项目介绍 / 测试文档（各 md、docx、pdf）
+├── docs/                      # 技术文档 / 需求分析 / 项目介绍 / 测试文档（各 md、docx、pdf）
 └── demo_video/                # 演示视频 MP4、静态页总览 PPTX
 ```
 
@@ -289,7 +289,7 @@ frontend/.env.example
    `run.py` 会从 `--port` 起自动找空端口。不要在同一端口重复启动服务；`--dev` 会额外占用 5173。
 
 7. **文档/视频是交付物**  
-   `docs/` 下三份文档的 PDF/Word/Markdown 与 `demo_video/` 下 MP4/PPTX 是最终交付材料；除非明确要求，不要重生成或覆盖。PDF 与 Word 必须保持同版：技术文档 27 页、项目介绍 15 页、测试文档 20 页；改内容后要重新导出 PDF 并同步静态目录页码。
+   `docs/` 下四份文档的 PDF/Word/Markdown 与 `demo_video/` 下 MP4/PPTX 是最终交付材料；除非明确要求，不要重生成或覆盖。PDF 与 Word 必须保持同版：技术文档 27 页、需求分析 25 页、项目介绍 15 页、测试文档 20 页；改内容后要重新导出 PDF 并同步静态目录页码。
 
 8. **测试现状**  
    后端有 12 个 unittest 接口用例，可运行 `python -m unittest discover -s tests -v`；前端仍以人工冒烟为主。不要把“后端用例通过”说成“全部测试通过”，真实模型链路还需要有效 Key 和单独验证。
